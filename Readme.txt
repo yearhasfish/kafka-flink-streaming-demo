@@ -20,7 +20,7 @@ flink:1.13.0-scala_2.11
 2. Start a zookeeper to deploy Kafka:
  docker run -d -it --name zookeeper -p 12181:2181 -p 12888:2888 -p 13888:3888 debezium/zookeeper:1.5
 
-3. Start a Kafka to provide application listeners to both container and outside of container(etc. local mac app).
+3. Start a Kafka to publish application listeners to both container and outside of container(etc. local mac app).
  docker run -d -it --name kafka -p 29092:29092 \
  -e "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT" \
  -e "KAFKA_LISTENERS=PLAINTEXT://172.17.0.3:9092,PLAINTEXT_HOST://0.0.0.0:29092"  \
@@ -28,14 +28,14 @@ flink:1.13.0-scala_2.11
  -e "KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT" \
  --link zookeeper:zookeeper debezium/kafka:1.5
 
-4. Start a Mysql, ensure binlog enabled.
+4. Start a Mysql, and ensure binlog enabled.
  docker run -d -it --name mysql -p 13306:3306 \
  -e MYSQL_ROOT_PASSWORD=admin \
  -e MYSQL_USER=user \
  -e MYSQL_PASSWORD=password \
  debezium/example-mysql:1.5
 
-5. Start a Kafka Connect to monitor mysql CDC
+5. Start a Kafka Connect to monitor mysql CDC:
  docker run -d -it --name connect -p 18083:8083 \
  -e GROUP_ID=1 \
  --link zookeeper:zookeeper \
@@ -43,14 +43,14 @@ flink:1.13.0-scala_2.11
  --link mysql:mysql \
  debezium/connect:1.5
 
-6. Start a Postgres to store the original messages from Kafka
+6. Start a Postgres to store the original messages from Kafka:
  docker run -d -p 5430:5432 --name demo_stream
  -e POSTGRES_PASSWORD=admin \
  -e POSTGRES_USER=admin \
  -e POSTGRES_DB=demo_stream \
  postgres:12
 
-7. API Registering a debezium connector to monitor the "inventory" table on mysql, then route to a Kafka topic
+7. API Registering a debezium connector to monitor the "inventory" table on mysql, then route to a Kafka topic. Curl command to post a new registration: 
  curl -i -X POST -H "Accept:application/json" -H
  '{
     "name": "test-inventory-connector",
@@ -69,11 +69,11 @@ flink:1.13.0-scala_2.11
     }
   }'
 
-8. Check if Kafka connect is created or not
+8. Check if Kafka connect is created or not. Curl command to test:
 curl -H "Accept:application/json" localhost:18083/connectors/
 -- ["test-inventory-connector"]
 
-9. Check if Kafka topics are mapped well from Debezium(topic named as ${DBLogicName}.${MQSQL_DATABASE_NAME}.${MQSQL_TABLE_NAME})
+9. Check if Kafka topics are mapped well from Debezium(topic named as ${DBLogicName}.${MQSQL_DATABASE_NAME}.${MQSQL_TABLE_NAME}).
     fullfillment
     fullfillment.inventory.addresses
     fullfillment.inventory.customers
