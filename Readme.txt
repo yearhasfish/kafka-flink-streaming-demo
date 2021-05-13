@@ -60,3 +60,18 @@ flink:1.13.0-scala_2.11
       "database.history.kafka.topic": "dbhistory.fullfillment"
     }
   }'
+
+8. Check if Kafka connect is created or not
+curl -H "Accept:application/json" localhost:18083/connectors/
+-- ["test-inventory-connector"]
+
+9. Check if Kafka topics are mapped well from Debezium(topic named as ${DBLogicName}.${MQSQL_DATABASE_NAME}.${MQSQL_TABLE_NAME})
+    fullfillment
+    fullfillment.inventory.addresses
+    fullfillment.inventory.customers
+    fullfillment.inventory.geom
+    fullfillment.inventory.orders
+    fullfillment.inventory.products
+    ......
+
+
