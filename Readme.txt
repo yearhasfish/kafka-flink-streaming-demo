@@ -1,4 +1,12 @@
-#This is a guideline for introducing the env setup based on docker
+#Technical skillsets and Components:
+1. Java8 + Spring Boot + JPA: automatic configuraiton and startup, ORMapping and database access etc.
+2. Camel: integration with upstreams and downstreams, based on event-driven archiecture it set up an event processing pipelne for Java application.
+3. Debezium: it works as a binlog connector for Mysql Changed Data Capture(CDC), changes CDC to events as Json formatted to send to Kafka.
+4. Kafka/Zookeeper: it publishes topics to listen inbound CDC events from Debezium Connector.
+5. PostgreSQL: DB stores metadata and payloads from CDC events for further analysis.
+6. Flink: Streaming compute in memory based on Kafka topics outbound messages.
+
+#Below is a guideline for introducing the env setup based on docker
 #Refer to the page: @https://debezium.io/documentation/reference/tutorial.html#registering-connector-monitor-inventory-database
 
 1. Dependencies of docker images, including kafka, zookeeper, mysql, postgres, kafka-connector and debezium.
