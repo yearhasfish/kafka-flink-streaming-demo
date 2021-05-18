@@ -23,21 +23,24 @@ flink:1.13.0-scala_2.11
 3. Start a Kafka to publish application listeners to both container and outside of container(etc. local mac app).
  docker run -d -it --name kafka -p 29092:29092 \
  -e "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT" \
- -e "KAFKA_LISTENERS=PLAINTEXT://172.17.0.3:9092,PLAINTEXT_HOST://0.0.0.0:29092"  \
- -e "KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.17.0.3:9092,PLAINTEXT_HOST://localhost:29092"  \
+ -e "KAFKA_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://0.0.0.0:29092"  \
+ -e "KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://localhost:29092"  \
  -e "KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT" \
  --link zookeeper:zookeeper debezium/kafka:1.5
 
 4. Start a Mysql, and ensure binlog enabled.
  docker run -d -it --name mysql -p 13306:3306 \
  -e MYSQL_ROOT_PASSWORD=admin \
- -e MYSQL_USER=user \
- -e MYSQL_PASSWORD=password \
+ -e MYSQL_USER=mysqluser \
+ -e MYSQL_PASSWORD=mysqlpw \
  debezium/example-mysql:1.5
 
 5. Start a Kafka Connect to monitor mysql CDC:
  docker run -d -it --name connect -p 18083:8083 \
  -e GROUP_ID=1 \
+ -e CONFIG_STORAGE_TOPIC=my_connect_configs \
+ -e OFFSET_STORAGE_TOPIC=my_connect_offsets \
+ -e STATUS_STORAGE_TOPIC=my_connect_statuses \
  --link zookeeper:zookeeper \
  --link kafka:kafka \
  --link mysql:mysql \
@@ -51,9 +54,8 @@ flink:1.13.0-scala_2.11
  postgres:12
 
 7. API Registering a debezium connector to monitor the "inventory" table on mysql, then route to a Kafka topic. Curl command to post a new registration: 
- curl -i -X POST -H "Accept:application/json" -H
- '{
-    "name": "test-inventory-connector",
+ curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" localhost:18083/connectors/ -d '{
+    "name": "inventory-connector",
     "config": {
       "connector.class": "io.debezium.connector.mysql.MySqlConnector",
       "tasks.max": "1",
@@ -70,8 +72,8 @@ flink:1.13.0-scala_2.11
   }'
 
 8. Check if Kafka connect is created or not. Curl command to test:
-curl -H "Accept:application/json" localhost:18083/connectors/
--- ["test-inventory-connector"]
+    curl -H "Accept:application/json" localhost:18083/connectors/
+-- ["inventory-connector"]
 
 9. Check if Kafka topics are mapped well from Debezium(topic named as ${DBLogicName}.${MQSQL_DATABASE_NAME}.${MQSQL_TABLE_NAME}).
     fullfillment

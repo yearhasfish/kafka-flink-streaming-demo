@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Persist Kafka streaming messages in real-time into Postgres from Mysql CDC
+ * Persist Kafka streaming messages in real-time into TiDB from Mysql CDC
  * Nick
  */
 @Component("dbSourceRoute")
